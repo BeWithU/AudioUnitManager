@@ -9,11 +9,12 @@
 /* Begin PBXBuildFile section */
 		47DCDD342574A69C00912425 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 47DCDD332574A69C00912425 /* AppDelegate.m */; };
 		47DCDD372574A69C00912425 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 47DCDD362574A69C00912425 /* SceneDelegate.m */; };
-		47DCDD3A2574A69C00912425 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 47DCDD392574A69C00912425 /* ViewController.m */; };
 		47DCDD3D2574A69C00912425 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 47DCDD3B2574A69C00912425 /* Main.storyboard */; };
 		47DCDD3F2574A69E00912425 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 47DCDD3E2574A69E00912425 /* Assets.xcassets */; };
 		47DCDD422574A69E00912425 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 47DCDD402574A69E00912425 /* LaunchScreen.storyboard */; };
 		47DCDD452574A69E00912425 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 47DCDD442574A69E00912425 /* main.m */; };
+		47DCDD4F2574D6C400912425 /* BZQRecordPlayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 47DCDD4E2574D6C400912425 /* BZQRecordPlayViewController.m */; };
+		47DCDD542574D9FF00912425 /* HomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 47DCDD532574D9FF00912425 /* HomeViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,13 +23,15 @@
 		47DCDD332574A69C00912425 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		47DCDD352574A69C00912425 /* SceneDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
 		47DCDD362574A69C00912425 /* SceneDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SceneDelegate.m; sourceTree = "<group>"; };
-		47DCDD382574A69C00912425 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
-		47DCDD392574A69C00912425 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
 		47DCDD3C2574A69C00912425 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		47DCDD3E2574A69E00912425 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		47DCDD412574A69E00912425 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		47DCDD432574A69E00912425 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		47DCDD442574A69E00912425 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		47DCDD4D2574D6C400912425 /* BZQRecordPlayViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BZQRecordPlayViewController.h; sourceTree = "<group>"; };
+		47DCDD4E2574D6C400912425 /* BZQRecordPlayViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BZQRecordPlayViewController.m; sourceTree = "<group>"; };
+		47DCDD522574D9FF00912425 /* HomeViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HomeViewController.h; sourceTree = "<group>"; };
+		47DCDD532574D9FF00912425 /* HomeViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HomeViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,13 +68,15 @@
 				47DCDD332574A69C00912425 /* AppDelegate.m */,
 				47DCDD352574A69C00912425 /* SceneDelegate.h */,
 				47DCDD362574A69C00912425 /* SceneDelegate.m */,
-				47DCDD382574A69C00912425 /* ViewController.h */,
-				47DCDD392574A69C00912425 /* ViewController.m */,
+				47DCDD4D2574D6C400912425 /* BZQRecordPlayViewController.h */,
+				47DCDD4E2574D6C400912425 /* BZQRecordPlayViewController.m */,
 				47DCDD3B2574A69C00912425 /* Main.storyboard */,
 				47DCDD3E2574A69E00912425 /* Assets.xcassets */,
 				47DCDD402574A69E00912425 /* LaunchScreen.storyboard */,
 				47DCDD432574A69E00912425 /* Info.plist */,
 				47DCDD442574A69E00912425 /* main.m */,
+				47DCDD522574D9FF00912425 /* HomeViewController.h */,
+				47DCDD532574D9FF00912425 /* HomeViewController.m */,
 			);
 			path = AudioUnitManager;
 			sourceTree = "<group>";
@@ -145,10 +150,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				47DCDD3A2574A69C00912425 /* ViewController.m in Sources */,
 				47DCDD342574A69C00912425 /* AppDelegate.m in Sources */,
 				47DCDD452574A69E00912425 /* main.m in Sources */,
+				47DCDD4F2574D6C400912425 /* BZQRecordPlayViewController.m in Sources */,
 				47DCDD372574A69C00912425 /* SceneDelegate.m in Sources */,
+				47DCDD542574D9FF00912425 /* HomeViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
