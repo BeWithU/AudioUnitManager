@@ -35,8 +35,11 @@
 @property (assign, nonatomic) BOOL playing;
 @property (strong, nonatomic) NSInputStream *inputStream;
 @property (strong, nonatomic) NSOutputStream *outoutStream;
+@property (strong, nonatomic) UISwitch *rightSwitch;
+@property (strong, nonatomic) UISwitch *leftSwitch;
+@property (assign, nonatomic) NSInteger playMode; //左1，右2
 
-//音频相关
+//音频相关，录音和播放单元可以是一个，即同时录音和播放，但是比较难控制暂停和开始，所以这里用两个
 @property (assign, nonatomic) AudioUnit recordAudioUnit;
 @property (assign, nonatomic) AudioUnit playAudioUnit;
 @end
@@ -46,14 +49,23 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    self.title = @"录制和播放PCM";
+    self.title = @"PCM格式";
     self.view.backgroundColor = UIColor.whiteColor;
+    self.playMode = 1 | 2;
 
+    self.navigationItem.hidesBackButton = YES;
+    UIBarButtonItem *newBackButton =
+        [[UIBarButtonItem alloc] initWithTitle:@"返回"
+                                         style:UIBarButtonItemStylePlain
+                                        target:self
+                                        action:@selector(backClick:)];
+    self.navigationItem.leftBarButtonItem = newBackButton;
 
     self.recordButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [self.view addSubview:self.recordButton];
     self.recordButton.frame = CGRectMake(20, 200, 200, 50);
     [self.recordButton setTitle:@"录制PCM音频" forState:UIControlStateNormal];
+    [self.recordButton.titleLabel setTextAlignment:NSTextAlignmentLeft];
     [self.recordButton setTitleColor:UIColor.blackColor forState:UIControlStateNormal];
     [self.recordButton addTarget:self
                           action:@selector(recordButtonClick)
@@ -63,14 +75,45 @@
     [self.view addSubview:self.playButton];
     self.playButton.frame = CGRectMake(20, 300, 200, 50);
     [self.playButton setTitle:@"播放录制的音频" forState:UIControlStateNormal];
+    [self.playButton.titleLabel setTextAlignment:NSTextAlignmentLeft];
     [self.playButton setTitleColor:UIColor.blackColor forState:UIControlStateNormal];
     [self.playButton addTarget:self
                         action:@selector(playButtonClick)
               forControlEvents:UIControlEventTouchUpInside];
 
+    UILabel *leftLbl = [[UILabel alloc] initWithFrame:CGRectMake(20, 400, 100, 30)];
+    [self.view addSubview:leftLbl];
+    leftLbl.text = @"左耳播放";
+    leftLbl.textColor = UIColor.blackColor;
+    leftLbl.textAlignment = NSTextAlignmentLeft;
+    self.leftSwitch = [[UISwitch alloc] init];
+    [self.view addSubview:self.leftSwitch];
+    CGRect leftRect = self.leftSwitch.bounds;
+    leftRect.origin.x = leftLbl.frame.origin.x;
+    leftRect.origin.y = leftLbl.frame.origin.y + leftLbl.frame.size.height + 10;
+    self.leftSwitch.frame = leftRect;
+    self.leftSwitch.on = YES;
+    [self.leftSwitch addTarget:self
+                        action:@selector(leftSwitchClick:)
+              forControlEvents:UIControlEventValueChanged];
+
+    UILabel *rightLbl = [[UILabel alloc] initWithFrame:CGRectMake(150, 400, 100, 30)];
+    [self.view addSubview:rightLbl];
+    rightLbl.text = @"右耳播放";
+    rightLbl.textColor = UIColor.blackColor;
+    rightLbl.textAlignment = NSTextAlignmentLeft;
+    self.rightSwitch = [[UISwitch alloc] init];
+    [self.view addSubview:self.rightSwitch];
+    leftRect.origin.x = rightLbl.frame.origin.x;
+    self.rightSwitch.frame = leftRect;
+    self.rightSwitch.on = YES;
+    [self.rightSwitch addTarget:self
+                         action:@selector(rightSwitchClick:)
+               forControlEvents:UIControlEventValueChanged];
+
     //设置AVAudioSession，保证能播放和录制
     [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayAndRecord
-                                     withOptions:AVAudioSessionCategoryOptionDefaultToSpeaker
+                                     withOptions:AVAudioSessionCategoryOptionAllowBluetoothA2DP
                                            error:nil];
     [[AVAudioSession sharedInstance] setActive:YES error:nil];
 
@@ -84,20 +127,25 @@
 //简称ASBD，就是PCM格式音频的描述文件，可以设置采样率，声道数量等
 + (AudioStreamBasicDescription)audioPCMFormat {
     AudioStreamBasicDescription audioFormat;
-    audioFormat.mSampleRate = 16000; //采样率
+    //采样率，每秒钟抽取声音样本次数。根据奈奎斯特采样理论，为了保证声音不失真，采样频率应该在40kHz左右
+    audioFormat.mSampleRate = 44100;
     audioFormat.mFormatID = kAudioFormatLinearPCM; //音频格式
 
     //详细描述了音频数据的数字格式，整数还是浮点数，大端还是小端
-    audioFormat.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger;
+    //注意，如果是双声道，这里一定要设置kAudioFormatFlagIsNonInterleaved，否则初始化AudioUnit会出现错误 1718449215
+    //kAudioFormatFlagIsNonInterleaved，非交错模式，即首先记录的是一个周期内所有帧的左声道样本，再记录所有右声道样本。
+    //对应的认为交错模式，数据以连续帧的方式存放，即首先记录帧1的左声道样本和右声道样本，再开始帧2的记录。
+    audioFormat.mFormatFlags = kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsNonInterleaved;
 
     //下面就是设置声音采集时的一些值
+    //比如采样率为44.1kHZ，采样精度为16位的双声道，可以算出比特率（bps）是44100*16*2bps，每秒的音频数据是固定的44100*16*2/8字节。
     //官方解释：满足下面这个公式时，上面的mFormatFlags会隐式设置为kAudioFormatFlagIsPacked
     //((mBitsPerSample / 8) * mChannelsPerFrame) == mBytesPerFrame
     audioFormat.mBytesPerPacket = 2;
     audioFormat.mFramesPerPacket = 1;
     audioFormat.mBytesPerFrame = 2;
-    audioFormat.mChannelsPerFrame = 1;//单声道，如果是2就是立体声。这里的数量决定了AudioBufferList的mBuffers长度是1还是2。
-    audioFormat.mBitsPerChannel = 16;
+    audioFormat.mChannelsPerFrame = 1;//1是单声道，2就是立体声。这里的数量决定了AudioBufferList的mBuffers长度是1还是2。
+    audioFormat.mBitsPerChannel = 16;//采样位数，数字越大，分辨率越高。16位可以记录65536个数，一般来说够用了。
 
     return audioFormat;
 }
@@ -156,29 +204,34 @@
 
     //设置播放相关属性，即OUTPUT_BUS
     //播放的格式，即我们处理音频之后要把这个格式的数据通过回调传出去给硬件来播放
-    AudioUnitSetProperty(self.playAudioUnit,
+    //播放的格式设置为立体声
+    AudioStreamBasicDescription outputFormat = pcmFormat;
+    outputFormat.mChannelsPerFrame = 2;
+    status = AudioUnitSetProperty(self.playAudioUnit,
                          kAudioUnitProperty_StreamFormat,
                          kAudioUnitScope_Input,
                          OUTPUT_BUS,
-                         &pcmFormat,
-                         sizeof(pcmFormat));
+                         &outputFormat,
+                         sizeof(outputFormat));
 
     //播放的回调方法，需要把被播放的数据通过这个方法的回调传出去
     AURenderCallbackStruct playCallback;
     playCallback.inputProc = PlayCallback;
     playCallback.inputProcRefCon = (__bridge void *)self;
-    AudioUnitSetProperty(self.playAudioUnit,
+    status = AudioUnitSetProperty(self.playAudioUnit,
                          kAudioUnitProperty_SetRenderCallback,
-                         kAudioUnitScope_Global,
+                         kAudioUnitScope_Input,
                          OUTPUT_BUS,
                          &playCallback,
                          sizeof(playCallback));
 
     //初始化，注意，这里只是初始化，还没开始播放
+    //这里初始化出现错误，请检查audioPCMFormat，outputFormat等格式是否有设置错误的
+    //比如设置了双声道，但是没有设置kAudioFormatFlagIsNonInterleaved
     status = AudioUnitInitialize(self.recordAudioUnit);
-    NSLog(@"XAFTFAudioUnit AudioUnitInitialize record %u", status);
+    NSLog(@"AudioUnitInitialize record %d", status);
     status = AudioUnitInitialize(self.playAudioUnit);
-    NSLog(@"XAFTFAudioUnit AudioUnitInitialize play %u", status);
+    NSLog(@"AudioUnitInitialize play %d", status);
 }
 
 #pragma mark - callback function
@@ -191,7 +244,7 @@ static OSStatus RecordCallback(void *inRefCon,
     BZQRecordPlayViewController *vc = (__bridge BZQRecordPlayViewController*)inRefCon;
     //用来缓存录音数据数据结构
     AudioBufferList *bufferList = (AudioBufferList *)malloc(sizeof(AudioBufferList));
-    bufferList->mNumberBuffers = 1; //声道数，如果是立体声，这里应该是2
+    bufferList->mNumberBuffers = 1; //声道数，如果是录制立体声，这里应该是2
     //下面是这个结构要缓存的音频的大小，这个值需要根据采样率，声道等共同设置，如果不知道多少就大一些也无所谓
     bufferList->mBuffers[0].mDataByteSize = CONST_BUFFER_SIZE;
     bufferList->mBuffers[0].mData = malloc(CONST_BUFFER_SIZE);
@@ -236,12 +289,43 @@ static OSStatus PlayCallback(void *inRefCon,
                              AudioBufferList *ioData) {
     BZQRecordPlayViewController *vc = (__bridge BZQRecordPlayViewController *)inRefCon;
 
-    //把要播放的声音放到输出的数组里面
-    ioData->mBuffers[0].mDataByteSize = (UInt32)[vc.inputStream read:ioData->mBuffers[0].mData
-                                                           maxLength:(NSInteger)ioData->mBuffers[0].mDataByteSize];
-    NSLog(@"PlayCallback bufferList = %u", ioData->mBuffers[0].mDataByteSize);
+#pragma mark - 立体声设置
+    //立体声需要分别设置mBuffers[0]和mBuffers[1]，注意即使想单耳出声也不能不设置另外一个，否则会有杂音和错误
+    //不想某个声道出声，长度正常设置，只需要把对应的mBuffers.mData清空为0就可以了
+
+    //buffer就是我们要播放的数据，这里是通过inputStream读取出来，你也可以通过云端获取或者设置个公共缓存，边录边播
+    Byte *buffer = malloc(CONST_BUFFER_SIZE);
+
+    //length是读出出来的音频数据的长度，也就是要播放的音频的长度，所以要复制给ioData对应的mDataByteSize
+    NSInteger length = [vc.inputStream read:buffer maxLength:(NSInteger)ioData->mBuffers[0].mDataByteSize];
+
+    //再次强调，无论是否需要某个声道出声，都需要设置长度
+    ioData->mBuffers[0].mDataByteSize = (UInt32)length;
+    ioData->mBuffers[1].mDataByteSize = (UInt32)length;
+
+    if (vc.playMode & 1) {
+        //mBuffers[0]对应左耳
+        memcpy(ioData->mBuffers[0].mData, buffer, length);
+    } else {
+        memset(ioData->mBuffers[0].mData, 0, length);
+    }
+    if (vc.playMode & 2) {
+        //mBuffers[1]对应左耳
+        memcpy(ioData->mBuffers[1].mData, buffer, length);
+    } else {
+        memset(ioData->mBuffers[1].mData, 0, length);
+    }
+
+    NSLog(@"PlayCallback bufferList = %ld", length);
+
+#pragma mark - 单声道设置
+    //如果没有立体声，那就直接用下面的代码，把要播放的声音放到mBuffers[0]就可以了
+//    ioData->mBuffers[0].mDataByteSize = (UInt32)[vc.inputStream read:ioData->mBuffers[0].mData
+//                                                           maxLength:(NSInteger)ioData->mBuffers[0].mDataByteSize];
+//    NSLog(@"PlayCallback bufferList = %u", ioData->mBuffers[0].mDataByteSize);
+
     //判断是否播放完了
-    if (ioData->mBuffers[0].mDataByteSize <= 0) {
+    if (length <= 0) {
         dispatch_async(dispatch_get_main_queue(), ^{
             [vc stopPlay];
         });
@@ -251,10 +335,17 @@ static OSStatus PlayCallback(void *inRefCon,
 
 #pragma mark - 音频数据处理
 + (NSString *)filePath {
+    //如果你要播放本地文件，就把PCM格式的文件加到项目里，然后把这里的路径改了
     return [NSTemporaryDirectory() stringByAppendingString:@"/record.pcm"];
 }
 
 #pragma mark - Private
+- (void)backClick:(UIBarButtonItem *)sender {
+    [self stopRecord];
+    [self stopPlay];
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
 - (void)startRecord {
     self.title = @"录音中";
     [self.recordButton setTitle:@"暂停录音" forState:UIControlStateNormal];
@@ -307,6 +398,23 @@ static OSStatus PlayCallback(void *inRefCon,
             [self stopRecord];
         }
         [self startPlay];
+    }
+}
+
+//切换播放模式
+- (void)rightSwitchClick:(UISwitch *)switchButton {
+    if (switchButton.on) {
+        self.playMode |= 2;
+    } else {
+        self.playMode &= 1;
+    }
+}
+
+- (void)leftSwitchClick:(UISwitch *)switchButton {
+    if (switchButton.on) {
+        self.playMode |= 1;
+    } else {
+        self.playMode &= 2;
     }
 }
 
