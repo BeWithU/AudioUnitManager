@@ -15,6 +15,7 @@
 		47DCDD452574A69E00912425 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 47DCDD442574A69E00912425 /* main.m */; };
 		47DCDD4F2574D6C400912425 /* BZQRecordPlayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 47DCDD4E2574D6C400912425 /* BZQRecordPlayViewController.m */; };
 		47DCDD542574D9FF00912425 /* HomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 47DCDD532574D9FF00912425 /* HomeViewController.m */; };
+		47DCDD892578DFDF00912425 /* BZQAudioUnitManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 47DCDD882578DFDF00912425 /* BZQAudioUnitManager.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +33,8 @@
 		47DCDD4E2574D6C400912425 /* BZQRecordPlayViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BZQRecordPlayViewController.m; sourceTree = "<group>"; };
 		47DCDD522574D9FF00912425 /* HomeViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HomeViewController.h; sourceTree = "<group>"; };
 		47DCDD532574D9FF00912425 /* HomeViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HomeViewController.m; sourceTree = "<group>"; };
+		47DCDD872578DFDF00912425 /* BZQAudioUnitManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BZQAudioUnitManager.h; sourceTree = "<group>"; };
+		47DCDD882578DFDF00912425 /* BZQAudioUnitManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BZQAudioUnitManager.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +80,8 @@
 				47DCDD442574A69E00912425 /* main.m */,
 				47DCDD522574D9FF00912425 /* HomeViewController.h */,
 				47DCDD532574D9FF00912425 /* HomeViewController.m */,
+				47DCDD872578DFDF00912425 /* BZQAudioUnitManager.h */,
+				47DCDD882578DFDF00912425 /* BZQAudioUnitManager.m */,
 			);
 			path = AudioUnitManager;
 			sourceTree = "<group>";
@@ -154,6 +159,7 @@
 				47DCDD452574A69E00912425 /* main.m in Sources */,
 				47DCDD4F2574D6C400912425 /* BZQRecordPlayViewController.m in Sources */,
 				47DCDD372574A69C00912425 /* SceneDelegate.m in Sources */,
+				47DCDD892578DFDF00912425 /* BZQAudioUnitManager.m in Sources */,
 				47DCDD542574D9FF00912425 /* HomeViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

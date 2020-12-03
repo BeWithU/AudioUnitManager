@@ -265,6 +265,15 @@ static OSStatus RecordCallback(void *inRefCon,
 
     //录音完成，可以对音频数据进行处理了，保存下来或者计算录音的分贝数等等
     //如果你需要计算录音时的音量，显示录音动画，这里就可以通过bufferList->mBuffers[0].mData计算得出
+    short *shortBuffer = (short *)bufferData;//因为我们的采样位数是16个字节，也就是需要用short来存储
+    memcpy(shortBuffer, bufferData, bufferSize);
+    long long pcmAllLen = 0;
+    for(int i=0;i<bufferSize/2;++i) {
+        pcmAllLen += shortBuffer[i]*shortBuffer[i];
+    }
+    //平方和除以数据总长度，得到音量大小
+    double volume = 10 * log10((double)pcmAllLen / bufferSize);
+    NSLog(@"vol = %lf", volume); //录音的分贝大小
 
     //[BZQRecordPlayViewController writePCMData:bufferData size:bufferSize];
     [vc.outoutStream write:bufferData maxLength:bufferSize];
