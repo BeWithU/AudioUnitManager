@@ -112,6 +112,7 @@
                forControlEvents:UIControlEventValueChanged];
 
     //设置AVAudioSession，保证能播放和录制
+    //注意，如果不希望声音从耳机出来，不想体验左右耳控制功能，那下面的options要设置成AVAudioSessionCategoryOptionDefaultToSpeaker
     [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayAndRecord
                                      withOptions:AVAudioSessionCategoryOptionAllowBluetoothA2DP
                                            error:nil];
@@ -265,15 +266,16 @@ static OSStatus RecordCallback(void *inRefCon,
 
     //录音完成，可以对音频数据进行处理了，保存下来或者计算录音的分贝数等等
     //如果你需要计算录音时的音量，显示录音动画，这里就可以通过bufferList->mBuffers[0].mData计算得出
-    short *shortBuffer = (short *)bufferData;//因为我们的采样位数是16个字节，也就是需要用short来存储
-    memcpy(shortBuffer, bufferData, bufferSize);
-    long long pcmAllLen = 0;
+    SInt16 *shortBuffer = (SInt16 *)bufferData;//因为我们的采样位数是16个字节，也就是需要用SInt16来存储
+    NSInteger pcmAllLen = 0;
+    //因为原数据bufferData是8位存储的，但是我们采样是16位，所以这里长度要减半
     for(int i=0;i<bufferSize/2;++i) {
-        pcmAllLen += shortBuffer[i]*shortBuffer[i];
+        NSInteger tmp = shortBuffer[i];
+        pcmAllLen += tmp*tmp;
     }
-    //平方和除以数据总长度，得到音量大小
-    double volume = 10 * log10((double)pcmAllLen / bufferSize);
-    NSLog(@"vol = %lf", volume); //录音的分贝大小
+    CGFloat db = 10 * log10((CGFloat)pcmAllLen / bufferSize);
+    //这里db就是我们计算出来的，当前这段音频的通过声压计算分贝算出来的，最大是90.3分贝
+    NSLog(@"Voice DB = %lf", db);
 
     //[BZQRecordPlayViewController writePCMData:bufferData size:bufferSize];
     [vc.outoutStream write:bufferData maxLength:bufferSize];
