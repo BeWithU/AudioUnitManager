@@ -16,8 +16,11 @@ const static NSInteger CONST_BUFFER_SIZE = 5000;
 
 @interface BZQAudioUnitManager()
 
+@property (strong, nonatomic) NSMutableData *ttsData;
+@property (strong, nonatomic) NSLock *lock;
+@property (assign, nonatomic) NSInteger usedLength;
+
 @property (copy, nonatomic) void (^recordBlock)(NSData *, CGFloat);
-//音频相关，录音和播放单元可以是一个，即同时录音和播放，但是比较难控制暂停和开始，所以这里用两个
 @property (assign, nonatomic) AudioUnit recordAudioUnit;
 @property (assign, nonatomic) AudioUnit playAudioUnit;
 
@@ -36,7 +39,11 @@ const static NSInteger CONST_BUFFER_SIZE = 5000;
 }
 
 - (void)setup {
-    
+    self.ttsData = [NSMutableData new];
+    self.lock = [NSLock new];
+    self.usedLength = 0;
+
+    [self setupAudioUnit];
 }
 
 #pragma mark - Private
@@ -44,43 +51,24 @@ const static NSInteger CONST_BUFFER_SIZE = 5000;
 //简称ASBD，就是PCM格式音频的描述文件，可以设置采样率，声道数量等
 + (AudioStreamBasicDescription)audioPCMFormat {
     AudioStreamBasicDescription audioFormat;
-    //采样率，每秒钟抽取声音样本次数。根据奈奎斯特采样理论，为了保证声音不失真，采样频率应该在40kHz左右
     audioFormat.mSampleRate = 44100;
     audioFormat.mFormatID = kAudioFormatLinearPCM; //音频格式
-
-    //详细描述了音频数据的数字格式，整数还是浮点数，大端还是小端
-    //注意，如果是双声道，这里一定要设置kAudioFormatFlagIsNonInterleaved，否则初始化AudioUnit会出现错误 1718449215
-    //kAudioFormatFlagIsNonInterleaved，非交错模式，即首先记录的是一个周期内所有帧的左声道样本，再记录所有右声道样本。
-    //对应的认为交错模式，数据以连续帧的方式存放，即首先记录帧1的左声道样本和右声道样本，再开始帧2的记录。
     audioFormat.mFormatFlags = kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsNonInterleaved;
-
-    //下面就是设置声音采集时的一些值
-    //比如采样率为44.1kHZ，采样精度为16位的双声道，可以算出比特率（bps）是44100*16*2bps，每秒的音频数据是固定的44100*16*2/8字节。
-    //官方解释：满足下面这个公式时，上面的mFormatFlags会隐式设置为kAudioFormatFlagIsPacked
-    //((mBitsPerSample / 8) * mChannelsPerFrame) == mBytesPerFrame
     audioFormat.mBytesPerPacket = 2;
     audioFormat.mFramesPerPacket = 1;
     audioFormat.mBytesPerFrame = 2;
-    audioFormat.mChannelsPerFrame = 1;//1是单声道，2就是立体声。这里的数量决定了AudioBufferList的mBuffers长度是1还是2。
-    audioFormat.mBitsPerChannel = 16;//采样位数，数字越大，分辨率越高。16位可以记录65536个数，一般来说够用了。
+    audioFormat.mChannelsPerFrame = 1;
+    audioFormat.mBitsPerChannel = 16;
 
     return audioFormat;
 }
 
 - (void)setupAudioUnit {
     OSStatus status = noErr;
-
-    //官方文档有比较详细的说明：https://developer.apple.com/library/archive/documentation/MusicAudio/Conceptual/AudioUnitHostingGuide_iOS/ConstructingAudioUnitApps/ConstructingAudioUnitApps.html#//apple_ref/doc/uid/TP40009492-CH16-SW1
-
-    //通过音频组件描述数据创建AudioUnit
-    //如果想创建多个AudioUnit串联对音频数据进行多重处理（混音，回声消除等），需要用AUGraph
     AudioComponentDescription audioDesc;
     audioDesc.componentType = kAudioUnitType_Output;
-    //有些Demo中这里用kAudioUnitSubType_VoiceProcessingIO，这个是用来处理回声消除的，声音会从手机出来，而不是耳机
-    //这里只有默认的录音和播放，用kAudioUnitSubType_RemoteIO就可以了
     audioDesc.componentSubType = kAudioUnitSubType_RemoteIO;
-    audioDesc.componentManufacturer = kAudioUnitManufacturer_Apple; //iOS都用这个，Mac上不太一样
-    //下面这两个除非你知道具体是干嘛的，否则用0就行了
+    audioDesc.componentManufacturer = kAudioUnitManufacturer_Apple;
     audioDesc.componentFlags = 0;
     audioDesc.componentFlagsMask = 0;
     AudioComponent component = AudioComponentFindNext(NULL, &audioDesc);
@@ -182,7 +170,18 @@ static OSStatus RecordCallback(void *inRefCon,
 
     //录音完成，可以对音频数据进行处理了，保存下来或者计算录音的分贝数等等
     //如果你需要计算录音时的音量，显示录音动画，这里就可以通过bufferList->mBuffers[0].mData计算得出
-
+    if (manager.recordBlock) {
+        //下面的代码是把PCM采样位数16位的数据计算分贝，其他采样位数的需要调整
+        short *shortData = (short *)bufferData;
+        NSInteger len = bufferSize / 2;
+        long long sum = 0;
+        for(NSInteger i=0;i<len;++i) {
+            sum += shortData[i]*shortData[i];
+        }
+        CGFloat db = 10 * log10((CGFloat)sum / bufferSize);
+        NSData *data = [[NSData alloc] initWithBytes:bufferData length:bufferSize];
+        manager.recordBlock(data, db);
+    }
 
     //下面就是释放处理完录音的音频之后，释放缓存的内容
     if (bufferList != NULL) {
@@ -203,34 +202,55 @@ static OSStatus PlayCallback(void *inRefCon,
                              UInt32 inNumberFrames,
                              AudioBufferList *ioData) {
     BZQAudioUnitManager *manager = (__bridge BZQAudioUnitManager *)inRefCon;
+    NSData *needPlayData = [manager readDataWithLength:(NSInteger)ioData->mBuffers[0].mDataByteSize];
+    memcpy(ioData->mBuffers[0].mData, needPlayData.bytes, needPlayData.length);
+    ioData->mBuffers[0].mDataByteSize = (UInt32)needPlayData.length;
 
-#pragma mark - 立体声设置
-    //立体声需要分别设置mBuffers[0]和mBuffers[1]，注意即使想单耳出声也不能不设置另外一个，否则会有杂音和错误
-    //不想某个声道出声，长度正常设置，只需要把对应的mBuffers.mData清空为0就可以了
-
-    //Byte *buffer = malloc(CONST_BUFFER_SIZE);
-
+    //如果不是流式的持续播放，那这里可能需要判断是否播放完了，根据具体逻辑把下面的注释打开
+//    if (needPlayData.length <= 0) {
+//        dispatch_async(dispatch_get_main_queue(), ^{
+//            [manager stopPlay];
+//        });
+//    }
     return noErr;
 }
 
 #pragma mark - Public
-- (void)recordWithBlock:(void (^)(NSData *pcmData, CGFloat vol))block {
-
+- (void)recordWithBlock:(void (^)(NSData *pcmData, CGFloat db))block {
+    self.recordBlock = block;
+    AudioOutputUnitStart(self.recordAudioUnit);
 }
 
 - (void)stopRecord {
-
+    AudioOutputUnitStop(self.recordAudioUnit);
+    //如果确定不录音了，这里可以释放对应的AU。后面需要录音就重新创建
+    //AudioUnitUninitialize(self.recordAudioUnit);
 }
 
 - (void)play {
-
+    AudioOutputUnitStart(self.playAudioUnit);
 }
 
 - (void)addPCMData:(NSData *)pcmData {
-
+    [self.lock lock];
+    [self.ttsData appendData:pcmData];
+    [self.lock unlock];
 }
 
 - (void)stopPlay {
+    AudioOutputUnitStop(self.playAudioUnit);
+}
 
+#pragma mark - Private
+- (NSData *)readDataWithLength:(NSInteger)length {
+    [self.lock lock];
+    NSRange range = NSMakeRange(self.usedLength, length);
+    if (self.usedLength + length > self.ttsData.length) {
+        range.length = self.ttsData.length - self.usedLength;
+    }
+    NSData *data = [self.ttsData subdataWithRange:range];
+    self.usedLength = range.location + range.length;
+    [self.lock unlock];
+    return data;
 }
 @end
