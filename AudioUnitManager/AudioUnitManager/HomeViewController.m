@@ -7,6 +7,7 @@
 
 #import "HomeViewController.h"
 #import "BZQRecordPlayViewController.h"
+#import "BZQMp3PlayerViewController.h"
 
 static NSString *const TableViewCellID = @"TableViewCellID";
 
@@ -52,6 +53,10 @@ static NSString *const TableViewCellID = @"TableViewCellID";
         case 0:{
             BZQRecordPlayViewController *rpvc = [BZQRecordPlayViewController new];
             [self.navigationController pushViewController:rpvc animated:YES];
+        } break;
+        case 1:{
+            BZQMp3PlayerViewController *mp3PlayerVC = [BZQMp3PlayerViewController new];
+            [self.navigationController pushViewController:mp3PlayerVC animated:YES];
         } break;
 
         default:

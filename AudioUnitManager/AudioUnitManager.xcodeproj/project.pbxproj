@@ -16,6 +16,9 @@
 		47DCDD4F2574D6C400912425 /* BZQRecordPlayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 47DCDD4E2574D6C400912425 /* BZQRecordPlayViewController.m */; };
 		47DCDD542574D9FF00912425 /* HomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 47DCDD532574D9FF00912425 /* HomeViewController.m */; };
 		47DCDD892578DFDF00912425 /* BZQAudioUnitManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 47DCDD882578DFDF00912425 /* BZQAudioUnitManager.m */; };
+		47F64BAD259441FF001B6700 /* BZQMP3Player.m in Sources */ = {isa = PBXBuildFile; fileRef = 47F64BAC259441FF001B6700 /* BZQMP3Player.m */; };
+		47F64BB125947EDB001B6700 /* color_X_3D.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 47F64BB025947EDB001B6700 /* color_X_3D.mp3 */; };
+		47F64BB525947F30001B6700 /* BZQMp3PlayerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 47F64BB425947F30001B6700 /* BZQMp3PlayerViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,6 +38,11 @@
 		47DCDD532574D9FF00912425 /* HomeViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HomeViewController.m; sourceTree = "<group>"; };
 		47DCDD872578DFDF00912425 /* BZQAudioUnitManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BZQAudioUnitManager.h; sourceTree = "<group>"; };
 		47DCDD882578DFDF00912425 /* BZQAudioUnitManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BZQAudioUnitManager.m; sourceTree = "<group>"; };
+		47F64BAB259441FF001B6700 /* BZQMP3Player.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BZQMP3Player.h; sourceTree = "<group>"; };
+		47F64BAC259441FF001B6700 /* BZQMP3Player.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BZQMP3Player.m; sourceTree = "<group>"; };
+		47F64BB025947EDB001B6700 /* color_X_3D.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = color_X_3D.mp3; sourceTree = "<group>"; };
+		47F64BB325947F30001B6700 /* BZQMp3PlayerViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BZQMp3PlayerViewController.h; sourceTree = "<group>"; };
+		47F64BB425947F30001B6700 /* BZQMp3PlayerViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BZQMp3PlayerViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,10 +75,13 @@
 		47DCDD312574A69C00912425 /* AudioUnitManager */ = {
 			isa = PBXGroup;
 			children = (
+				47F64BAF25947EDB001B6700 /* music */,
 				47DCDD322574A69C00912425 /* AppDelegate.h */,
 				47DCDD332574A69C00912425 /* AppDelegate.m */,
 				47DCDD352574A69C00912425 /* SceneDelegate.h */,
 				47DCDD362574A69C00912425 /* SceneDelegate.m */,
+				47F64BB325947F30001B6700 /* BZQMp3PlayerViewController.h */,
+				47F64BB425947F30001B6700 /* BZQMp3PlayerViewController.m */,
 				47DCDD4D2574D6C400912425 /* BZQRecordPlayViewController.h */,
 				47DCDD4E2574D6C400912425 /* BZQRecordPlayViewController.m */,
 				47DCDD3B2574A69C00912425 /* Main.storyboard */,
@@ -82,9 +93,19 @@
 				47DCDD532574D9FF00912425 /* HomeViewController.m */,
 				47DCDD872578DFDF00912425 /* BZQAudioUnitManager.h */,
 				47DCDD882578DFDF00912425 /* BZQAudioUnitManager.m */,
+				47F64BAB259441FF001B6700 /* BZQMP3Player.h */,
+				47F64BAC259441FF001B6700 /* BZQMP3Player.m */,
 			);
 			path = AudioUnitManager;
 			sourceTree = "<group>";
+		};
+		47F64BAF25947EDB001B6700 /* music */ = {
+			isa = PBXGroup;
+			children = (
+				47F64BB025947EDB001B6700 /* color_X_3D.mp3 */,
+			);
+			path = music;
+			sourceTree = SOURCE_ROOT;
 		};
 /* End PBXGroup section */
 
@@ -142,6 +163,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				47F64BB125947EDB001B6700 /* color_X_3D.mp3 in Resources */,
 				47DCDD422574A69E00912425 /* LaunchScreen.storyboard in Resources */,
 				47DCDD3F2574A69E00912425 /* Assets.xcassets in Resources */,
 				47DCDD3D2574A69C00912425 /* Main.storyboard in Resources */,
@@ -155,6 +177,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				47F64BB525947F30001B6700 /* BZQMp3PlayerViewController.m in Sources */,
+				47F64BAD259441FF001B6700 /* BZQMP3Player.m in Sources */,
 				47DCDD342574A69C00912425 /* AppDelegate.m in Sources */,
 				47DCDD452574A69E00912425 /* main.m in Sources */,
 				47DCDD4F2574D6C400912425 /* BZQRecordPlayViewController.m in Sources */,
