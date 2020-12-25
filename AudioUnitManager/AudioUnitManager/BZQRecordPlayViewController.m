@@ -310,6 +310,15 @@ static OSStatus PlayCallback(void *inRefCon,
     //length是读出出来的音频数据的长度，也就是要播放的音频的长度，所以要复制给ioData对应的mDataByteSize
     NSInteger length = [vc.inputStream read:buffer maxLength:(NSInteger)ioData->mBuffers[0].mDataByteSize];
 
+    if (length <= 0) {
+        memset(ioData->mBuffers[0].mData, 0, ioData->mBuffers[0].mDataByteSize);
+        memset(ioData->mBuffers[1].mData, 0, ioData->mBuffers[1].mDataByteSize);
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [vc stopPlay];
+        });
+        return noErr;
+    }
+
     //再次强调，无论是否需要某个声道出声，都需要设置长度
     ioData->mBuffers[0].mDataByteSize = (UInt32)length;
     ioData->mBuffers[1].mDataByteSize = (UInt32)length;
@@ -378,6 +387,8 @@ static OSStatus PlayCallback(void *inRefCon,
     [self.playButton setTitle:@"暂停播放" forState:UIControlStateNormal];
     AudioOutputUnitStart(self.playAudioUnit);
     self.playing = YES;
+//    NSURL *url = [[NSBundle mainBundle] URLForResource:@"china-x" withExtension:@"pcm"];
+//    self.inputStream = [NSInputStream inputStreamWithURL:url];
     self.inputStream = [NSInputStream inputStreamWithFileAtPath:[self.class filePath]];
     [self.inputStream open];
 }

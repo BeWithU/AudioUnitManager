@@ -8,6 +8,7 @@
 #import "HomeViewController.h"
 #import "BZQRecordPlayViewController.h"
 #import "BZQMp3PlayerViewController.h"
+#import "BZQAccompanyViewController.h"
 
 static NSString *const TableViewCellID = @"TableViewCellID";
 
@@ -21,9 +22,8 @@ static NSString *const TableViewCellID = @"TableViewCellID";
     [super viewDidLoad];
 
     self.clearsSelectionOnViewWillAppear = NO;
-    //self.navigationItem.rightBarButtonItem = self.editButtonItem;
     [self.tableView registerClass:UITableViewCell.class forCellReuseIdentifier:TableViewCellID];
-    self.datasource = @[@"录制和播放PCM", @"录制和播放MP3", @"边录边播"];
+    self.datasource = @[@"录制和播放PCM", @"播放MP3", @"边录边播"];
 }
 
 #pragma mark - Table view data source
@@ -49,6 +49,8 @@ static NSString *const TableViewCellID = @"TableViewCellID";
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    
     switch (indexPath.row) {
         case 0:{
             BZQRecordPlayViewController *rpvc = [BZQRecordPlayViewController new];
@@ -58,7 +60,10 @@ static NSString *const TableViewCellID = @"TableViewCellID";
             BZQMp3PlayerViewController *mp3PlayerVC = [BZQMp3PlayerViewController new];
             [self.navigationController pushViewController:mp3PlayerVC animated:YES];
         } break;
-
+        case 2:{
+            BZQAccompanyViewController *accompanyVC = [BZQAccompanyViewController new];
+            [self.navigationController pushViewController:accompanyVC animated:YES];
+        } break;
         default:
             break;
     }

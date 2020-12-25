@@ -43,7 +43,7 @@
 
     NSURL *url = [[NSBundle mainBundle] URLForResource:@"color_X_3D" withExtension:@"mp3"];
     self.player = [[BZQMP3Player alloc] initWithUrl:url];
-
+    [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
 }
 
 #pragma mark - Private
@@ -62,7 +62,6 @@
         button.tag = 0;
         [self.playButton setTitle:@"播放" forState:UIControlStateNormal];
     }
-
 }
 
 @end

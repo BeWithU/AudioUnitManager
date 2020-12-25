@@ -107,6 +107,7 @@ typedef NS_ENUM(NSInteger, BZQPlayMode) {
     }
 
     self.packetFormat = malloc(sizeof(AudioStreamPacketDescription));
+    //AudioBufferList默认只有一个声道，所以立体声的缓存申请内存的时候要加一个AudioBuffer的size
     self.bufferList = (AudioBufferList *)malloc(sizeof(AudioBufferList) + sizeof(AudioBuffer));
     self.bufferList->mNumberBuffers = 2;
     self.bufferList->mBuffers[0].mNumberChannels = 1;
