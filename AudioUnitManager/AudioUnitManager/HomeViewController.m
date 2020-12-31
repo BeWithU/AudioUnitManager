@@ -9,6 +9,7 @@
 #import "BZQRecordPlayViewController.h"
 #import "BZQMp3PlayerViewController.h"
 #import "BZQAccompanyViewController.h"
+#import "BZQWebRTCViewController.h"
 
 static NSString *const TableViewCellID = @"TableViewCellID";
 
@@ -23,7 +24,7 @@ static NSString *const TableViewCellID = @"TableViewCellID";
 
     self.clearsSelectionOnViewWillAppear = NO;
     [self.tableView registerClass:UITableViewCell.class forCellReuseIdentifier:TableViewCellID];
-    self.datasource = @[@"录制和播放PCM", @"播放MP3", @"边录边播"];
+    self.datasource = @[@"录制和播放PCM", @"播放MP3", @"边录边播", @"测试WebRTC"];
 }
 
 #pragma mark - Table view data source
@@ -63,6 +64,10 @@ static NSString *const TableViewCellID = @"TableViewCellID";
         case 2:{
             BZQAccompanyViewController *accompanyVC = [BZQAccompanyViewController new];
             [self.navigationController pushViewController:accompanyVC animated:YES];
+        } break;
+        case 3:{
+            BZQWebRTCViewController *webRTCVC = [BZQWebRTCViewController new];
+            [self.navigationController pushViewController:webRTCVC animated:YES];
         } break;
         default:
             break;

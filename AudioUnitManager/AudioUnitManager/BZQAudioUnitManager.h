@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 //具体每个方法，参数都是做什么的，参考BZQRecordPlayViewController
 @interface BZQAudioUnitManager : NSObject
 
-+ (instancetype)sharedManager;
+- (instancetype)initWithSampleRate:(NSInteger)ar;
 
 - (void)recordWithBlock:(void (^)(NSData *pcmData, CGFloat db))block;
 - (void)stopRecord;
@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 //场景比如从云端下发的一段一段的数据可以通过这个方法添加后播放。
 - (void)addPCMData:(NSData *)pcmData;
 - (void)stopPlay;
+- (void)clearPlayData;
 @end
 
 NS_ASSUME_NONNULL_END

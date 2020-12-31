@@ -22,6 +22,11 @@
 		47F64BBC25958E6E001B6700 /* BZQAccompanyRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = 47F64BBB25958E6E001B6700 /* BZQAccompanyRecorder.m */; };
 		47F64BC82595D474001B6700 /* BZQAccompanyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 47F64BC72595D474001B6700 /* BZQAccompanyViewController.m */; };
 		47F64BCD2595DCC7001B6700 /* china-x.pcm in Resources */ = {isa = PBXBuildFile; fileRef = 47F64BCC2595DCC7001B6700 /* china-x.pcm */; };
+		47F64BD82599C523001B6700 /* noise_suppression.c in Sources */ = {isa = PBXBuildFile; fileRef = 47F64BD72599C523001B6700 /* noise_suppression.c */; };
+		47F64C2C259C26F7001B6700 /* BZQWebRTCNSRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = 47F64C2B259C26F7001B6700 /* BZQWebRTCNSRecorder.m */; };
+		47F64C5E259C549E001B6700 /* BZQWebRTC.m in Sources */ = {isa = PBXBuildFile; fileRef = 47F64C5D259C549E001B6700 /* BZQWebRTC.m */; };
+		47F64C70259D883E001B6700 /* BZQWebRTCViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 47F64C6F259D883E001B6700 /* BZQWebRTCViewController.m */; };
+		47F64C75259D97DC001B6700 /* noise.pcm in Resources */ = {isa = PBXBuildFile; fileRef = 47F64BDA2599E269001B6700 /* noise.pcm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -51,6 +56,15 @@
 		47F64BC62595D474001B6700 /* BZQAccompanyViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BZQAccompanyViewController.h; sourceTree = "<group>"; };
 		47F64BC72595D474001B6700 /* BZQAccompanyViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BZQAccompanyViewController.m; sourceTree = "<group>"; };
 		47F64BCC2595DCC7001B6700 /* china-x.pcm */ = {isa = PBXFileReference; lastKnownFileType = file; path = "china-x.pcm"; sourceTree = "<group>"; };
+		47F64BD62599C523001B6700 /* noise_suppression.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = noise_suppression.h; sourceTree = "<group>"; };
+		47F64BD72599C523001B6700 /* noise_suppression.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = noise_suppression.c; sourceTree = "<group>"; };
+		47F64BDA2599E269001B6700 /* noise.pcm */ = {isa = PBXFileReference; lastKnownFileType = file; path = noise.pcm; sourceTree = "<group>"; };
+		47F64C2A259C26F7001B6700 /* BZQWebRTCNSRecorder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BZQWebRTCNSRecorder.h; sourceTree = "<group>"; };
+		47F64C2B259C26F7001B6700 /* BZQWebRTCNSRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BZQWebRTCNSRecorder.m; sourceTree = "<group>"; };
+		47F64C5C259C549E001B6700 /* BZQWebRTC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BZQWebRTC.h; sourceTree = "<group>"; };
+		47F64C5D259C549E001B6700 /* BZQWebRTC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BZQWebRTC.m; sourceTree = "<group>"; };
+		47F64C6E259D883E001B6700 /* BZQWebRTCViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BZQWebRTCViewController.h; sourceTree = "<group>"; };
+		47F64C6F259D883E001B6700 /* BZQWebRTCViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BZQWebRTCViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -83,6 +97,7 @@
 		47DCDD312574A69C00912425 /* AudioUnitManager */ = {
 			isa = PBXGroup;
 			children = (
+				47F64BD52599C523001B6700 /* webRTC */,
 				47F64BAF25947EDB001B6700 /* music */,
 				47DCDD322574A69C00912425 /* AppDelegate.h */,
 				47DCDD332574A69C00912425 /* AppDelegate.m */,
@@ -114,10 +129,26 @@
 		47F64BAF25947EDB001B6700 /* music */ = {
 			isa = PBXGroup;
 			children = (
+				47F64BDA2599E269001B6700 /* noise.pcm */,
 				47F64BCC2595DCC7001B6700 /* china-x.pcm */,
 				47F64BB025947EDB001B6700 /* color_X_3D.mp3 */,
 			);
 			path = music;
+			sourceTree = SOURCE_ROOT;
+		};
+		47F64BD52599C523001B6700 /* webRTC */ = {
+			isa = PBXGroup;
+			children = (
+				47F64BD62599C523001B6700 /* noise_suppression.h */,
+				47F64BD72599C523001B6700 /* noise_suppression.c */,
+				47F64C2A259C26F7001B6700 /* BZQWebRTCNSRecorder.h */,
+				47F64C2B259C26F7001B6700 /* BZQWebRTCNSRecorder.m */,
+				47F64C5C259C549E001B6700 /* BZQWebRTC.h */,
+				47F64C5D259C549E001B6700 /* BZQWebRTC.m */,
+				47F64C6E259D883E001B6700 /* BZQWebRTCViewController.h */,
+				47F64C6F259D883E001B6700 /* BZQWebRTCViewController.m */,
+			);
+			path = webRTC;
 			sourceTree = SOURCE_ROOT;
 		};
 /* End PBXGroup section */
@@ -176,6 +207,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				47F64C75259D97DC001B6700 /* noise.pcm in Resources */,
 				47F64BB125947EDB001B6700 /* color_X_3D.mp3 in Resources */,
 				47F64BCD2595DCC7001B6700 /* china-x.pcm in Resources */,
 				47DCDD422574A69E00912425 /* LaunchScreen.storyboard in Resources */,
@@ -192,15 +224,19 @@
 			buildActionMask = 2147483647;
 			files = (
 				47F64BBC25958E6E001B6700 /* BZQAccompanyRecorder.m in Sources */,
+				47F64C70259D883E001B6700 /* BZQWebRTCViewController.m in Sources */,
 				47F64BB525947F30001B6700 /* BZQMp3PlayerViewController.m in Sources */,
 				47F64BC82595D474001B6700 /* BZQAccompanyViewController.m in Sources */,
 				47F64BAD259441FF001B6700 /* BZQMP3Player.m in Sources */,
+				47F64BD82599C523001B6700 /* noise_suppression.c in Sources */,
 				47DCDD342574A69C00912425 /* AppDelegate.m in Sources */,
+				47F64C5E259C549E001B6700 /* BZQWebRTC.m in Sources */,
 				47DCDD452574A69E00912425 /* main.m in Sources */,
 				47DCDD4F2574D6C400912425 /* BZQRecordPlayViewController.m in Sources */,
 				47DCDD372574A69C00912425 /* SceneDelegate.m in Sources */,
 				47DCDD892578DFDF00912425 /* BZQAudioUnitManager.m in Sources */,
 				47DCDD542574D9FF00912425 /* HomeViewController.m in Sources */,
+				47F64C2C259C26F7001B6700 /* BZQWebRTCNSRecorder.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -344,6 +380,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = V5GAHQMLT5;
 				INFOPLIST_FILE = AudioUnitManager/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
@@ -363,6 +400,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = V5GAHQMLT5;
 				INFOPLIST_FILE = AudioUnitManager/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;

@@ -387,8 +387,6 @@ static OSStatus PlayCallback(void *inRefCon,
     [self.playButton setTitle:@"暂停播放" forState:UIControlStateNormal];
     AudioOutputUnitStart(self.playAudioUnit);
     self.playing = YES;
-//    NSURL *url = [[NSBundle mainBundle] URLForResource:@"china-x" withExtension:@"pcm"];
-//    self.inputStream = [NSInputStream inputStreamWithURL:url];
     self.inputStream = [NSInputStream inputStreamWithFileAtPath:[self.class filePath]];
     [self.inputStream open];
 }

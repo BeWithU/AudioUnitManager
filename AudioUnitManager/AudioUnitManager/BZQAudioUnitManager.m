@@ -16,7 +16,8 @@ const static NSInteger CONST_BUFFER_SIZE = 5000;
 
 @interface BZQAudioUnitManager()
 
-@property (strong, nonatomic) NSMutableData *ttsData;
+@property (assign, nonatomic) NSInteger ar;
+@property (strong, nonatomic) NSMutableData *pcmData;
 @property (strong, nonatomic) NSLock *lock;
 @property (assign, nonatomic) NSInteger usedLength;
 
@@ -28,18 +29,16 @@ const static NSInteger CONST_BUFFER_SIZE = 5000;
 
 @implementation BZQAudioUnitManager
 
-+ (instancetype)sharedManager {
-    static BZQAudioUnitManager *manager;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        manager = [BZQAudioUnitManager new];
-        [manager setup];
-    });
-    return manager;
+- (instancetype)initWithSampleRate:(NSInteger)ar {
+    if (self = [super init]) {
+        _ar = ar;
+        [self setup];
+    }
+    return self;
 }
 
 - (void)setup {
-    self.ttsData = [NSMutableData new];
+    self.pcmData = [NSMutableData new];
     self.lock = [NSLock new];
     self.usedLength = 0;
 
@@ -79,6 +78,7 @@ const static NSInteger CONST_BUFFER_SIZE = 5000;
     //设置录音相关属性，即INPUT_BUS相关
     //录音的格式，注意这里设置的是INPUT_BUS的kAudioUnitScope_Output
     AudioStreamBasicDescription pcmFormat = [self.class audioPCMFormat];
+    pcmFormat.mSampleRate = self.ar;
     AudioUnitSetProperty(self.recordAudioUnit,
                          kAudioUnitProperty_StreamFormat,
                          kAudioUnitScope_Output,
@@ -233,7 +233,7 @@ static OSStatus PlayCallback(void *inRefCon,
 
 - (void)addPCMData:(NSData *)pcmData {
     [self.lock lock];
-    [self.ttsData appendData:pcmData];
+    [self.pcmData appendData:pcmData];
     [self.lock unlock];
 }
 
@@ -241,14 +241,21 @@ static OSStatus PlayCallback(void *inRefCon,
     AudioOutputUnitStop(self.playAudioUnit);
 }
 
+- (void)clearPlayData {
+    [self.lock lock];
+    self.pcmData.length = 0;
+    self.usedLength = 0;
+    [self.lock unlock];
+}
+
 #pragma mark - Private
 - (NSData *)readDataWithLength:(NSInteger)length {
     [self.lock lock];
     NSRange range = NSMakeRange(self.usedLength, length);
-    if (self.usedLength + length > self.ttsData.length) {
-        range.length = self.ttsData.length - self.usedLength;
+    if (self.usedLength + length > self.pcmData.length) {
+        range.length = self.pcmData.length - self.usedLength;
     }
-    NSData *data = [self.ttsData subdataWithRange:range];
+    NSData *data = [self.pcmData subdataWithRange:range];
     self.usedLength = range.location + range.length;
     [self.lock unlock];
     return data;

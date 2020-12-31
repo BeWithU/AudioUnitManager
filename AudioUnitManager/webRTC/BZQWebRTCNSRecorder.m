@@ -1,32 +1,26 @@
 //
-//  BZQAccompanyRecorder.m
+//  BZQWebRTCNSRecorder.m
 //  AudioUnitManager
 //
-//  Created by BanZhiqiang on 2020/12/25.
+//  Created by BanZhiqiang on 2020/12/30.
 //
 
-#import "BZQAccompanyRecorder.h"
+#import "BZQWebRTCNSRecorder.h"
 #import <AudioUnit/AudioUnit.h>
 
-const static NSInteger OUTPUT_BUS = 0;
 const static NSInteger INPUT_BUS = 1;
 const static NSInteger CONST_BUFFER_SIZE = 10000;
 
-@interface BZQAccompanyRecorder ()
+@interface BZQWebRTCNSRecorder ()
 @property (assign, nonatomic) AudioUnit recordAudioUnit;
-@property (assign, nonatomic) AudioUnit playAudioUnit;
 
 @property (copy, nonatomic) void (^recordBlock)(NSData *);
-@property (strong, nonatomic) NSMutableData *recordData; //可以考虑用循环缓冲，否则录制的音频都放到内存，会导致内存暴涨
-@property (strong, nonatomic) NSInputStream *inputStream;
-@property (assign, nonatomic) NSUInteger readLength;
 @end
 
-@implementation BZQAccompanyRecorder
+@implementation BZQWebRTCNSRecorder
 
 - (instancetype)init {
     if (self = [super init]) {
-        [self setupData];
         [self setupAudioUnit];
     }
     return self;
@@ -36,27 +30,15 @@ const static NSInteger CONST_BUFFER_SIZE = 10000;
 
 - (void)recordWithBlock:(void (^)(NSData *pcmData))block {
     self.recordBlock = block;
-    [self.inputStream open];
 
     AudioOutputUnitStart(self.recordAudioUnit);
-    AudioOutputUnitStart(self.playAudioUnit);
 }
 
 - (void)stopRecord {
     AudioOutputUnitStop(self.recordAudioUnit);
-    AudioOutputUnitStop(self.playAudioUnit);
 }
 
 #pragma mark - Private
-
-- (void)setupData {
-    NSURL *url = [[NSBundle mainBundle] URLForResource:@"china-x" withExtension:@"pcm"];
-    self.inputStream = [NSInputStream inputStreamWithURL:url];
-
-    self.recordData = [NSMutableData data];
-
-    self.readLength = 0;
-}
 
 - (void)setupAudioUnit {
     OSStatus status = noErr;
@@ -69,7 +51,6 @@ const static NSInteger CONST_BUFFER_SIZE = 10000;
     audioDesc.componentFlagsMask = 0;
     AudioComponent component = AudioComponentFindNext(NULL, &audioDesc);
     AudioComponentInstanceNew(component, &_recordAudioUnit);
-    AudioComponentInstanceNew(component, &_playAudioUnit);
 
     AudioStreamBasicDescription pcmFormat = [self.class audioPCMFormat];
     AudioUnitSetProperty(self.recordAudioUnit,
@@ -97,37 +78,14 @@ const static NSInteger CONST_BUFFER_SIZE = 10000;
                                   &recordCallback,
                                   sizeof(recordCallback));
 
-    //设置播放相关属性，即OUTPUT_BUS
-    AudioStreamBasicDescription outputFormat = pcmFormat;
-    outputFormat.mChannelsPerFrame = 2;
-    status = AudioUnitSetProperty(self.playAudioUnit,
-                         kAudioUnitProperty_StreamFormat,
-                         kAudioUnitScope_Input,
-                         OUTPUT_BUS,
-                         &outputFormat,
-                         sizeof(outputFormat));
-
-    //播放的回调方法，需要把被播放的数据通过这个方法的回调传出去
-    AURenderCallbackStruct playCallback;
-    playCallback.inputProc = PlayCallback;
-    playCallback.inputProcRefCon = (__bridge void *)self;
-    status = AudioUnitSetProperty(self.playAudioUnit,
-                         kAudioUnitProperty_SetRenderCallback,
-                         kAudioUnitScope_Input,
-                         OUTPUT_BUS,
-                         &playCallback,
-                         sizeof(playCallback));
-
     //初始化，注意，这里只是初始化
     status = AudioUnitInitialize(self.recordAudioUnit);
     NSLog(@"AudioUnitInitialize record %d", status);
-    status = AudioUnitInitialize(self.playAudioUnit);
-    NSLog(@"AudioUnitInitialize play %d", status);
 }
 
 + (AudioStreamBasicDescription)audioPCMFormat {
     AudioStreamBasicDescription audioFormat;
-    audioFormat.mSampleRate = 44100;
+    audioFormat.mSampleRate = 16000; //降噪只支持8K，16K，32K
     audioFormat.mFormatID = kAudioFormatLinearPCM; //音频格式
     audioFormat.mFormatFlags = kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsNonInterleaved;
     audioFormat.mBytesPerPacket = 2;
@@ -146,7 +104,7 @@ static OSStatus RecordCallback(void *inRefCon,
                                UInt32 inBusNumber,
                                UInt32 inNumberFrames,
                                AudioBufferList *ioData) {
-    BZQAccompanyRecorder *recorder = (__bridge BZQAccompanyRecorder *)inRefCon;
+    BZQWebRTCNSRecorder *recorder = (__bridge BZQWebRTCNSRecorder *)inRefCon;
     //用来缓存录音数据数据结构
     AudioBufferList *bufferList = (AudioBufferList *)malloc(sizeof(AudioBufferList));
     bufferList->mNumberBuffers = 1;
@@ -168,7 +126,6 @@ static OSStatus RecordCallback(void *inRefCon,
     NSLog(@"RecordCallback bufferList = %u", bufferSize);
 
     //录音完成
-    [recorder.recordData appendBytes:bufferData length:bufferSize];
     if (recorder.recordBlock) {
         recorder.recordBlock([NSData dataWithBytes:bufferData length:bufferSize]);
     }
@@ -184,41 +141,5 @@ static OSStatus RecordCallback(void *inRefCon,
     }
     return status;
 }
-
-static OSStatus PlayCallback(void *inRefCon,
-                             AudioUnitRenderActionFlags *ioActionFlags,
-                             const AudioTimeStamp *inTimeStamp,
-                             UInt32 inBusNumber,
-                             UInt32 inNumberFrames,
-                             AudioBufferList *ioData) {
-    BZQAccompanyRecorder *recorder = (__bridge BZQAccompanyRecorder *)inRefCon;
-
-    Byte *buffer = malloc(CONST_BUFFER_SIZE);
-    //length是读出来的音频数据的长度，也就是要播放的音频的长度，所以要复制给ioData对应的mDataByteSize
-    NSInteger length = [recorder.inputStream read:buffer maxLength:(NSInteger)ioData->mBuffers[0].mDataByteSize];
-
-    ioData->mBuffers[0].mDataByteSize = (UInt32)length;
-    ioData->mBuffers[1].mDataByteSize = (UInt32)length;
-    //这个是伴奏的音频数据
-    memcpy(ioData->mBuffers[0].mData, buffer, length);
-
-    //录制的音频
-    memset(ioData->mBuffers[1].mData, 0, length);
-    NSData *readData = [recorder.recordData subdataWithRange:NSMakeRange(recorder.readLength, length)];
-    recorder.readLength += readData.length;
-    memcpy(ioData->mBuffers[1].mData, readData.bytes, readData.length);
-
-
-    NSLog(@"PlayCallback bufferList = %ld", length);
-
-    //判断是否播放完了
-    if (length <= 0) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [recorder stopRecord];
-        });
-    }
-    return noErr;
-}
-
 
 @end
